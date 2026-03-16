@@ -1,0 +1,48 @@
+# === TERRAFORM ====
+
+# Local Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Backup of Terraform state files
+*.tfstate.backup
+
+# Crash log files from Terraform
+crash.log
+
+# .terraform directories created by Terraform
+.terraform/
+
+# Ignore override files, which are automatically generated and can be specific to the local machine
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore sensitive variables files (optional, if you use them)
+*.tfvars
+*.tfvars.json
+*.terraform.lock.hcl
+
+# Ignore environment variable files containing sensitive information
+.env
+env
+secrets.h
+
+# macOS generated files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Temporary and swap files
+*~
+
+# Vim swap files
+*.swp
+
+# IDE project files
+.idea/
+.vscode/
+
+# Logs (optional, for certain setups)
+*.log

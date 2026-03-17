@@ -25,18 +25,42 @@ data "aws_region" "current" {}
 
 locals {
   iot_devices = {
-    generic_subscriber = {
-      thing_name = "generic-subscriber"
-      client_id  = "generic-subscriber"
+    # generic_subscriber = {
+    #   thing_name = "generic-subscriber"
+    #   client_id  = "generic-subscriber"
+    #   role       = "subscriber"
+    #   topic      = "iot-devices/generic"
+    # }
+    # generic_publisher = {
+    #   thing_name = "generic-publisher"
+    #   client_id  = "generic-publisher"
+    #   role       = "publisher"
+    #   topic      = "iot-devices/generic"
+    # }
+    blink_subscriber = {
+      thing_name = "blink-subscriber"
+      client_id  = "blink-subscriber"
       role       = "subscriber"
-      topic      = "iot-devices/generic"
+      topic      = "iot-devices/blink"
     }
-    generic_publisher = {
-      thing_name = "generic-publisher"
-      client_id  = "generic-publisher"
+    blink_publisher = {
+      thing_name = "blink-publisher"
+      client_id  = "blink-publisher"
       role       = "publisher"
-      topic      = "iot-devices/generic"
+      topic      = "iot-devices/blink"
     }
+    # door_sensor_publisher = {
+    #   thing_name = "door-sensor-publisher"
+    #   client_id  = "door-sensor-publisher"
+    #   role       = "publisher"
+    #   topic      = "iot-devices/door-sensor"
+    # }
+    # temperature_sensor_publisher = {
+    #   thing_name = "temperature-sensor-publisher"
+    #   client_id  = "temperature-sensor-publisher"
+    #   role       = "publisher"
+    #   topic      = "iot-devices/temperature-sensor"
+    # }
   }
 
   publishers  = { for key, device in local.iot_devices : key => device if device.role == "publisher" }

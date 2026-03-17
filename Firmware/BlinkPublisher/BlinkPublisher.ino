@@ -26,6 +26,8 @@ static const unsigned long WIFI_RETRY_MS = 500;
 static const unsigned long MQTT_RETRY_MS = 2000;
 static const unsigned long LOOP_DELAY_MS = 10;
 static const unsigned long BUTTON_DEBOUNCE_MS = 35;
+static const char *COLOR_STATES[] = {"red", "green", "blue", "off"};
+static const size_t COLOR_STATE_COUNT = sizeof(COLOR_STATES) / sizeof(COLOR_STATES[0]);
 
 #ifndef BUTTON_PIN
 #define BUTTON_PIN 9
@@ -37,7 +39,6 @@ static const unsigned long BUTTON_DEBOUNCE_MS = 35;
 
 unsigned long lastMqttRetryMs = 0;
 unsigned long sequence = 0;
-bool outboundLedState = false;
 
 int stableButtonState = HIGH;
 int lastButtonReading = HIGH;
@@ -45,7 +46,7 @@ unsigned long lastButtonTransitionMs = 0;
 
 void connectWiFi();
 void connectMQTT();
-void publishMessage(bool stateOn);
+void publishMessage(const char *state);
 void handleButton();
 
 void connectWiFi() {
@@ -92,10 +93,10 @@ void connectAWS() {
   connectMQTT();
 }
 
-void publishMessage(bool stateOn) {
+void publishMessage(const char *state) {
   StaticJsonDocument<256> doc;
-  doc["action"] = "set_led";
-  doc["state"] = stateOn ? "on" : "off";
+  doc["action"] = "set_color";
+  doc["state"] = state;
   doc["sequence"] = sequence++;
 
   String payload;
@@ -124,10 +125,10 @@ void handleButton() {
     stableButtonState = reading;
 
     if (stableButtonState == BUTTON_ACTIVE_STATE) {
-      Serial.println("Button pressed. Publishing LED state event.");
+      Serial.println("Button pressed. Publishing random color event.");
       if (client.connected()) {
-        outboundLedState = !outboundLedState;
-        publishMessage(outboundLedState);
+        const char *nextColor = COLOR_STATES[random(COLOR_STATE_COUNT)];
+        publishMessage(nextColor);
       } else {
         Serial.println("MQTT not connected. Skipping publish.");
       }
@@ -143,6 +144,8 @@ void setup() {
 
   stableButtonState = digitalRead(BUTTON_PIN);
   lastButtonReading = stableButtonState;
+
+  randomSeed(micros());
 
   connectAWS();
 }

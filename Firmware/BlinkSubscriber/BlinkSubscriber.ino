@@ -7,7 +7,7 @@
  * Description:
  *   - Connects to AWS IoT Core using MQTT over a secure connection.
  *   - Subscribes to a predefined topic to receive real-time messages.
- *   - On receiving a message, an external LED toggles to signal incoming data.
+ *   - On receiving a message, an external WS2812 LED displays the requested color.
  *   - Designed to enable quiet, non-intrusive notifications (e.g., for calls).
  *   - Uses WiFi credentials and certificates defined in "secrets.h".
  * ============================================================
@@ -27,46 +27,58 @@ static const unsigned long WIFI_RETRY_MS = 500;
 static const unsigned long MQTT_RETRY_MS = 2000;
 static const unsigned long LOOP_DELAY_MS = 10;
 
-#ifndef WS2812_PIN
-#ifdef LED_PIN
+struct RgbColor {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+};
+
+#if !defined(WS2812_PIN) && defined(LED_PIN)
 #define WS2812_PIN LED_PIN
-#else
+#elif !defined(WS2812_PIN)
 #define WS2812_PIN 10
-#endif
 #endif
 
 #ifndef WS2812_LED_COUNT
 #define WS2812_LED_COUNT 1
 #endif
 
-#ifndef WS2812_ON_R
-#define WS2812_ON_R 0
+#ifndef WS2812_COLOR_RED
+#define WS2812_COLOR_RED {255, 0, 0}
 #endif
 
-#ifndef WS2812_ON_G
-#define WS2812_ON_G 32
+#ifndef WS2812_COLOR_GREEN
+#define WS2812_COLOR_GREEN {0, 255, 0}
 #endif
 
-#ifndef WS2812_ON_B
-#define WS2812_ON_B 0
+#ifndef WS2812_COLOR_BLUE
+#define WS2812_COLOR_BLUE {0, 0, 255}
 #endif
 
 #ifndef WS2812_BRIGHTNESS
 #define WS2812_BRIGHTNESS 64
 #endif
 
+static constexpr RgbColor kWs2812Red = WS2812_COLOR_RED;
+static constexpr RgbColor kWs2812Green = WS2812_COLOR_GREEN;
+static constexpr RgbColor kWs2812Blue = WS2812_COLOR_BLUE;
+
 unsigned long lastMqttRetryMs = 0;
 
-bool ledState = false;
 Adafruit_NeoPixel pixels(WS2812_LED_COUNT, WS2812_PIN, NEO_GRB + NEO_KHZ800);
 
 void connectWiFi();
 void connectMQTT();
 void messageHandler(String &topic, String &payload);
-void applyLedState();
+void setColor(const RgbColor &color);
+void setColor(uint8_t red, uint8_t green, uint8_t blue);
 
-void applyLedState() {
-  uint32_t color = ledState ? pixels.Color(WS2812_ON_R, WS2812_ON_G, WS2812_ON_B) : pixels.Color(0, 0, 0);
+void setColor(const RgbColor &color) {
+  setColor(color.red, color.green, color.blue);
+}
+
+void setColor(uint8_t red, uint8_t green, uint8_t blue) {
+  uint32_t color = pixels.Color(red, green, blue);
   for (int i = 0; i < WS2812_LED_COUNT; i++) {
     pixels.setPixelColor(i, color);
   }
@@ -137,13 +149,24 @@ void messageHandler(String &topic, String &payload) {
   const char *action = doc["action"] | "";
   const char *state = doc["state"] | "";
 
-  if (strcmp(action, "set_led") == 0 && (strcmp(state, "on") == 0 || strcmp(state, "off") == 0)) {
-    ledState = (strcmp(state, "on") == 0);
-    applyLedState();
-    Serial.print("LED set: ");
-    Serial.println(ledState ? "ON" : "OFF");
+  if (strcmp(action, "set_color") == 0) {
+    if (strcmp(state, "red") == 0) {
+      setColor(kWs2812Red);
+    } else if (strcmp(state, "green") == 0) {
+      setColor(kWs2812Green);
+    } else if (strcmp(state, "blue") == 0) {
+      setColor(kWs2812Blue);
+    } else if (strcmp(state, "off") == 0) {
+      setColor(0, 0, 0);
+    } else {
+      Serial.println("Ignoring message: unknown color state.");
+      return;
+    }
+
+    Serial.print("LED color set: ");
+    Serial.println(state);
   } else {
-    Serial.println("Ignoring message: expected action=set_led and state=on|off.");
+    Serial.println("Ignoring message: expected action=set_color.");
   }
 }
 
@@ -151,7 +174,7 @@ void setup() {
   Serial.begin(115200);
   pixels.begin();
   pixels.setBrightness(WS2812_BRIGHTNESS);
-  applyLedState();
+  setColor(0, 0, 0);
   connectAWS();
 }
 

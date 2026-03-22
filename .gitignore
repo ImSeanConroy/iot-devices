@@ -79,3 +79,8 @@ fp-info-cache
 # Other
 .DS_Store
 */Libraries
+
+# === DASHBOARD ====
+*.pem
+node_modules/
+dist/

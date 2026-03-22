@@ -37,6 +37,7 @@ locals {
     #   role       = "publisher"
     #   topic      = "iot-devices/generic"
     # }
+
     blink_subscriber = {
       thing_name = "blink-subscriber"
       client_id  = "blink-subscriber"
@@ -49,6 +50,13 @@ locals {
       role       = "publisher"
       topic      = "iot-devices/blink"
     }
+    blink_dashboard = {
+      thing_name = "blink-dashboard"
+      client_id  = "blink-dashboard"
+      role       = "subscriber"
+      topic      = "iot-devices/blink"
+    }
+
     # door_sensor_publisher = {
     #   thing_name = "door-sensor-publisher"
     #   client_id  = "door-sensor-publisher"
@@ -60,6 +68,12 @@ locals {
     #   client_id  = "temperature-sensor-publisher"
     #   role       = "publisher"
     #   topic      = "iot-devices/temperature-sensor"
+    # }
+    # gps_publisher = {
+    #   thing_name = "gps-publisher"
+    #   client_id  = "gps-publisher"
+    #   role       = "publisher"
+    #   topic      = "iot-devices/gps"
     # }
   }
 

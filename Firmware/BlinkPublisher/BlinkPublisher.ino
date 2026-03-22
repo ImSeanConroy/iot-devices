@@ -26,19 +26,15 @@ static const unsigned long WIFI_RETRY_MS = 500;
 static const unsigned long MQTT_RETRY_MS = 2000;
 static const unsigned long LOOP_DELAY_MS = 10;
 static const unsigned long BUTTON_DEBOUNCE_MS = 35;
-static const char *COLOR_STATES[] = {"red", "green", "blue", "off"};
+static const char *COLOR_STATES[] = {"red", "green", "blue", "purple", "pink", "orange", "yellow", "off"};
 static const size_t COLOR_STATE_COUNT = sizeof(COLOR_STATES) / sizeof(COLOR_STATES[0]);
 
-#ifndef BUTTON_PIN
 #define BUTTON_PIN 9
-#endif
-
-#ifndef BUTTON_ACTIVE_STATE
 #define BUTTON_ACTIVE_STATE LOW
-#endif
 
 unsigned long lastMqttRetryMs = 0;
 unsigned long sequence = 0;
+int lastPublishedColorIndex = -1;
 
 int stableButtonState = HIGH;
 int lastButtonReading = HIGH;
@@ -127,8 +123,14 @@ void handleButton() {
     if (stableButtonState == BUTTON_ACTIVE_STATE) {
       Serial.println("Button pressed. Publishing random color event.");
       if (client.connected()) {
-        const char *nextColor = COLOR_STATES[random(COLOR_STATE_COUNT)];
+        int nextColorIndex = random(COLOR_STATE_COUNT);
+        if (COLOR_STATE_COUNT > 1 && nextColorIndex == lastPublishedColorIndex) {
+          nextColorIndex = (nextColorIndex + 1 + random(COLOR_STATE_COUNT - 1)) % COLOR_STATE_COUNT;
+        }
+
+        const char *nextColor = COLOR_STATES[nextColorIndex];
         publishMessage(nextColor);
+        lastPublishedColorIndex = nextColorIndex;
       } else {
         Serial.println("MQTT not connected. Skipping publish.");
       }
@@ -138,8 +140,6 @@ void handleButton() {
 
 void setup() {
   Serial.begin(115200);
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   stableButtonState = digitalRead(BUTTON_PIN);

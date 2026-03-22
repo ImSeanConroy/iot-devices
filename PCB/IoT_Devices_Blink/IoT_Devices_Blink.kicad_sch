@@ -1425,7 +1425,7 @@
 			(uuid "249e5223-9eee-4d61-b6c6-636c92d29975")
 		)
 		(instances
-			(project ""
+			(project "IoT_Devices_Blink"
 				(path "/b5283d16-bf3a-4bc2-be4d-4f67771ecd29"
 					(reference "D1")
 					(unit 1)
@@ -1495,7 +1495,7 @@
 			(uuid "99c727a8-1b2c-4644-a75f-d32a0db496be")
 		)
 		(instances
-			(project ""
+			(project "IoT_Devices_Blink"
 				(path "/b5283d16-bf3a-4bc2-be4d-4f67771ecd29"
 					(reference "C1")
 					(unit 1)
@@ -1563,7 +1563,7 @@
 			(uuid "9a7d3b81-d469-48cc-8f2f-e97b32cdceb2")
 		)
 		(instances
-			(project ""
+			(project "IoT_Devices_Blink"
 				(path "/b5283d16-bf3a-4bc2-be4d-4f67771ecd29"
 					(reference "SW1")
 					(unit 1)
@@ -1630,7 +1630,7 @@
 			(uuid "e00a931b-6f54-4cf0-82e3-f94868c12ee9")
 		)
 		(instances
-			(project "Blink"
+			(project "IoT_Devices_Blink"
 				(path "/b5283d16-bf3a-4bc2-be4d-4f67771ecd29"
 					(reference "R1")
 					(unit 1)
@@ -1666,7 +1666,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x07_P2.54mm_Vertical"
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x07_P2.54mm_Vertical"
 			(at 85.09 59.69 0)
 			(effects
 				(font
@@ -1715,7 +1715,7 @@
 			(uuid "33a3a776-1b16-40d1-ba5e-0b3dee5a6407")
 		)
 		(instances
-			(project ""
+			(project "IoT_Devices_Blink"
 				(path "/b5283d16-bf3a-4bc2-be4d-4f67771ecd29"
 					(reference "J1")
 					(unit 1)
@@ -1752,7 +1752,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x07_P2.54mm_Vertical"
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x07_P2.54mm_Vertical"
 			(at 93.98 59.69 0)
 			(effects
 				(font
@@ -1801,7 +1801,7 @@
 			(uuid "8815b15a-6148-47d0-b5d1-1217a8011fe0")
 		)
 		(instances
-			(project "Blink"
+			(project "IoT_Devices_Blink"
 				(path "/b5283d16-bf3a-4bc2-be4d-4f67771ecd29"
 					(reference "J2")
 					(unit 1)

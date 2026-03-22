@@ -33,39 +33,21 @@ struct RgbColor {
   uint8_t blue;
 };
 
-#if !defined(WS2812_PIN) && defined(LED_PIN)
-#define WS2812_PIN LED_PIN
-#elif !defined(WS2812_PIN)
 #define WS2812_PIN 10
-#endif
-
-#ifndef WS2812_LED_COUNT
 #define WS2812_LED_COUNT 1
-#endif
-
-#ifndef WS2812_COLOR_RED
-#define WS2812_COLOR_RED {255, 0, 0}
-#endif
-
-#ifndef WS2812_COLOR_GREEN
-#define WS2812_COLOR_GREEN {0, 255, 0}
-#endif
-
-#ifndef WS2812_COLOR_BLUE
-#define WS2812_COLOR_BLUE {0, 0, 255}
-#endif
-
-#ifndef WS2812_BRIGHTNESS
 #define WS2812_BRIGHTNESS 64
-#endif
 
-static constexpr RgbColor kWs2812Red = WS2812_COLOR_RED;
-static constexpr RgbColor kWs2812Green = WS2812_COLOR_GREEN;
-static constexpr RgbColor kWs2812Blue = WS2812_COLOR_BLUE;
+static constexpr RgbColor kWs2812Red = {255, 0, 0};
+static constexpr RgbColor kWs2812Green = {0, 255, 0};
+static constexpr RgbColor kWs2812Blue = {0, 0, 255};
+static constexpr RgbColor kWs2812Purple = {128, 0, 255};
+static constexpr RgbColor kWs2812Pink = {255, 20, 147};
+static constexpr RgbColor kWs2812Orange = {255, 140, 0};
+static constexpr RgbColor kWs2812Yellow = {255, 255, 0};
 
 unsigned long lastMqttRetryMs = 0;
 
-Adafruit_NeoPixel pixels(WS2812_LED_COUNT, WS2812_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels(WS2812_LED_COUNT, WS2812_PIN, NEO_RGB + NEO_KHZ800);
 
 void connectWiFi();
 void connectMQTT();
@@ -156,6 +138,14 @@ void messageHandler(String &topic, String &payload) {
       setColor(kWs2812Green);
     } else if (strcmp(state, "blue") == 0) {
       setColor(kWs2812Blue);
+    } else if (strcmp(state, "purple") == 0) {
+      setColor(kWs2812Purple);
+    } else if (strcmp(state, "pink") == 0) {
+      setColor(kWs2812Pink);
+    } else if (strcmp(state, "orange") == 0) {
+      setColor(kWs2812Orange);
+    } else if (strcmp(state, "yellow") == 0) {
+      setColor(kWs2812Yellow);
     } else if (strcmp(state, "off") == 0) {
       setColor(0, 0, 0);
     } else {

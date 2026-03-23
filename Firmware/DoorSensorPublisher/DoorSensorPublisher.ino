@@ -1,13 +1,12 @@
 /*
  * ============================================================
- * Project: IoT Device (Blink Publisher)
+ * Project: IoT Device (Door Sensor Publisher)
  * Developer: Sean Conroy
  * Board: Seeed Studio Xiao ESP32C3
  * License: MIT
  * Description:
  *   - Connects to AWS IoT Core using MQTT over a secure connection.
- *   - Reads a pushbutton input with software debounce.
- *   - Publishes random color commands (JSON) when the button is pressed.
+ *   - Debounces a reed switch input and publishes state changes.
  *   - Includes reconnect logic for Wi-Fi and MQTT to stay online.
  *   - Uses WiFi credentials and certificates defined in "secrets.h".
  * ============================================================
@@ -25,25 +24,27 @@ MQTTClient client = MQTTClient(256);
 static const unsigned long WIFI_RETRY_MS = 500;
 static const unsigned long MQTT_RETRY_MS = 2000;
 static const unsigned long LOOP_DELAY_MS = 10;
-static const unsigned long BUTTON_DEBOUNCE_MS = 35;
-static const char *COLOR_STATES[] = {"red", "green", "blue", "purple", "pink", "orange", "yellow", "off"};
-static const size_t COLOR_STATE_COUNT = sizeof(COLOR_STATES) / sizeof(COLOR_STATES[0]);
+static const unsigned long DEBOUNCE_MS = 35;
 
-#define BUTTON_PIN 9
-#define BUTTON_ACTIVE_STATE LOW
+#define REED_PIN 9
 
 unsigned long lastMqttRetryMs = 0;
 unsigned long sequence = 0;
-int lastPublishedColorIndex = -1;
+unsigned long lastDebounceTimeMs = 0;
 
-int stableButtonState = HIGH;
-int lastButtonReading = HIGH;
-unsigned long lastButtonTransitionMs = 0;
+int stableDoorState = HIGH;
+int lastDoorReading = HIGH;
 
 void connectWiFi();
 void connectMQTT();
-void publishMessage(const char *state, int colorIndex);
-void handleButton();
+void connectAWS();
+void handleDoorSensor();
+bool publishDoorState(const char* eventType, int state);
+
+const char* doorStateText(int state) {
+  // INPUT_PULLUP wiring: HIGH=open (idle), LOW=closed (magnet present)
+  return state == HIGH ? "open" : "closed";
+}
 
 void connectWiFi() {
   if (WiFi.status() == WL_CONNECTED) {
@@ -77,26 +78,23 @@ void connectMQTT() {
 }
 
 void connectAWS() {
-  // Configure WiFiClientSecure to use the AWS IoT device credentials
   net.setCACert(AWS_CERT_CA);
   net.setCertificate(AWS_CERT_CRT);
   net.setPrivateKey(AWS_CERT_PRIVATE);
 
-  // Connect to the MQTT broker on the AWS endpoint we defined earlier
   client.begin(AWS_IOT_ENDPOINT, 8883, net);
 
   connectWiFi();
   connectMQTT();
 }
 
-void publishMessage(const char *state, int colorIndex) {
+bool publishDoorState(const int state) {
   StaticJsonDocument<256> doc;
-  doc["message_type"] = "command";
-  doc["event"] = "button_press";
+  doc["message_type"] = "telemetry";
+  doc["event"] = "door_changed";
   doc["thing"] = THINGNAME;
-  doc["action"] = "set_color";
-  doc["state"] = state;
-  doc["value"] = colorIndex;
+  doc["state"] = doorStateText(state);
+  doc["value"] = state;
   doc["sequence"] = sequence++;
   doc["uptime_ms"] = millis();
 
@@ -112,47 +110,45 @@ void publishMessage(const char *state, int colorIndex) {
   } else {
     Serial.println("Publish failed.");
   }
+
+  return ok;
 }
 
-void handleButton() {
-  int reading = digitalRead(BUTTON_PIN);
+void handleDoorSensor() {
+  int reading = digitalRead(REED_PIN);
 
-  if (reading != lastButtonReading) {
-    lastButtonReading = reading;
-    lastButtonTransitionMs = millis();
+  if (reading != lastDoorReading) {
+    lastDoorReading = reading;
+    lastDebounceTimeMs = millis();
   }
 
-  if ((millis() - lastButtonTransitionMs) >= BUTTON_DEBOUNCE_MS && reading != stableButtonState) {
-    stableButtonState = reading;
+  if ((millis() - lastDebounceTimeMs) >= DEBOUNCE_MS && reading != stableDoorState) {
+    stableDoorState = reading;
+    Serial.print("Door changed: ");
+    Serial.println(doorStateText(stableDoorState));
 
-    if (stableButtonState == BUTTON_ACTIVE_STATE) {
-      Serial.println("Button pressed. Publishing random color event.");
-      if (client.connected()) {
-        int nextColorIndex = random(COLOR_STATE_COUNT);
-        if (COLOR_STATE_COUNT > 1 && nextColorIndex == lastPublishedColorIndex) {
-          nextColorIndex = (nextColorIndex + 1 + random(COLOR_STATE_COUNT - 1)) % COLOR_STATE_COUNT;
-        }
-
-        const char *nextColor = COLOR_STATES[nextColorIndex];
-        publishMessage(nextColor, nextColorIndex);
-        lastPublishedColorIndex = nextColorIndex;
-      } else {
-        Serial.println("MQTT not connected. Skipping publish.");
-      }
+    if (client.connected()) {
+      publishDoorState(stableDoorState);
+    } else {
+      Serial.println("MQTT not connected. Skipping publish.");
     }
   }
 }
 
 void setup() {
   Serial.begin(115200);
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(REED_PIN, INPUT_PULLUP);
 
-  stableButtonState = digitalRead(BUTTON_PIN);
-  lastButtonReading = stableButtonState;
-
-  randomSeed(micros());
+  stableDoorState = digitalRead(REED_PIN);
+  lastDoorReading = stableDoorState;
 
   connectAWS();
+  Serial.print("Initial door state: ");
+  Serial.println(doorStateText(stableDoorState));
+
+  if (client.connected()) {
+    publishDoorState("door_startup", stableDoorState);
+  }
 }
 
 void loop() {
@@ -169,7 +165,7 @@ void loop() {
   }
 
   client.loop();
-  handleButton();
+  handleDoorSensor();
 
   delay(LOOP_DELAY_MS);
 }

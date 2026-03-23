@@ -1,14 +1,14 @@
 /*
  * ============================================================
- * Project: IoT Device (Subscriber)
+ * Project: IoT Device (Blink Subscriber)
  * Developer: Sean Conroy
  * Board: Seeed Studio Xiao ESP32C3
  * License: MIT
  * Description:
  *   - Connects to AWS IoT Core using MQTT over a secure connection.
  *   - Subscribes to a predefined topic to receive real-time messages.
- *   - On receiving a message, an external WS2812 LED displays the requested color.
- *   - Designed to enable quiet, non-intrusive notifications (e.g., for calls).
+ *   - Parses color command payloads and drives an external WS2812 LED.
+ *   - Supports named color states and an off state.
  *   - Uses WiFi credentials and certificates defined in "secrets.h".
  * ============================================================
  */

@@ -1,14 +1,14 @@
 /*
  * ============================================================
- * Project: IoT Device (Subscriber)
+ * Project: IoT Device (Generic Subscriber)
  * Developer: Sean Conroy
  * Board: Seeed Studio Xiao ESP32C3
  * License: MIT
  * Description:
  *   - Connects to AWS IoT Core using MQTT over a secure connection.
  *   - Subscribes to a predefined topic to receive real-time messages.
- *   - On receiving a message, the built-in LED blinks to signal incoming data.
- *   - Designed to enable quiet, non-intrusive notifications (e.g., for calls).
+ *   - On each message, briefly blinks the built-in LED as a receive indicator.
+ *   - Designed as a reusable baseline subscriber for IoT flows.
  *   - Uses WiFi credentials and certificates defined in "secrets.h".
  * ============================================================
  */

@@ -1,14 +1,14 @@
 /*
  * ============================================================
- * Project: IoT Device (Producer)
+ * Project: IoT Device (Generic Publisher)
  * Developer: Sean Conroy
  * Board: Seeed Studio Xiao ESP32C3
  * License: MIT
  * Description:
  *   - Connects to AWS IoT Core using MQTT over a secure connection.
- *   - Publishes periodic JSON messages to a predefined topic.
+ *   - Publishes periodic heartbeat-style JSON messages to a topic.
  *   - Includes reconnect logic for Wi-Fi and MQTT to stay online.
- *   - Designed as a reusable producer/test publisher for IoT flows.
+ *   - Designed as a reusable baseline publisher for IoT flows.
  *   - Uses WiFi credentials and certificates defined in "secrets.h".
  * ============================================================
  */
@@ -81,7 +81,8 @@ void connectAWS() {
 
 void publishMessage() {
   StaticJsonDocument<256> doc;
-  doc["event"] = "produce";
+  doc["message_type"] = "telemetry";
+  doc["event"] = "heartbeat";
   doc["thing"] = THINGNAME;
   doc["sequence"] = sequence++;
   doc["uptime_ms"] = millis();
